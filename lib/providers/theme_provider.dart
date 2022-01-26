@@ -11,7 +11,10 @@ class ThemeProvider with ChangeNotifier {
     bgColorBottom: AppColors.bgColorLightBottom,
     bgGradient: AppColors.gradientModeLight,
     themeColor: AppColors.themeColorLight,
+    textColor: AppColors.textColorDark,
     themeModeIcon: const Icon(Icons.mode_night_outlined),
+    shadowColorTop: AppColors.themeShadowTopLight,
+    shadowColorDown: AppColors.themeShadowDownLight,
   );
 
   void changeTheme(CustomThemeMode themeMode) {
@@ -23,7 +26,10 @@ class ThemeProvider with ChangeNotifier {
           bgColorBottom: AppColors.bgColorLightBottom,
           bgGradient: AppColors.gradientModeLight,
           themeColor: AppColors.themeColorLight,
+          textColor: AppColors.textColorDark,
           themeModeIcon: const Icon(Icons.mode_night_outlined),
+          shadowColorTop: AppColors.themeShadowTopLight,
+          shadowColorDown: AppColors.themeShadowDownLight,
         );
         notifyListeners();
         break;
@@ -34,10 +40,13 @@ class ThemeProvider with ChangeNotifier {
           bgColorBottom: AppColors.bgColorDarkBottom,
           bgGradient: AppColors.gradientModeDark,
           themeColor: AppColors.themeColorDark,
+          textColor: AppColors.textColorLight,
           themeModeIcon: const Icon(
             Icons.light_mode_outlined,
             color: Colors.white,
           ),
+          shadowColorTop: AppColors.themeShadowTopDark,
+          shadowColorDown: AppColors.themeShadowDownDark,
         );
         notifyListeners();
         break;
