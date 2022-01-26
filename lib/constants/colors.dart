@@ -14,13 +14,13 @@ class AppColors {
   static const Color themeColorLight = Color(0xFF00B0AA);
   static const Color themeColorDark = Color(0xFF005855);
 
-  static const Gradient gradientLightMode = LinearGradient(
+  static const Gradient gradientModeLight = LinearGradient(
     colors: [bgColorLightTop, bgColorLightBottom],
     begin: Alignment.topLeft,
     end: Alignment.bottomRight,
   );
 
-  static const Gradient gradientDarkMode = LinearGradient(
+  static const Gradient gradientModeDark = LinearGradient(
     colors: [bgColorDarkTop, bgColorDarkBottom],
     begin: Alignment.topLeft,
     end: Alignment.bottomRight,
