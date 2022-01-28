@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:neumorphic_music_player/constants/colors.dart';
+import 'package:neumorphic_music_player/ui/player/widgets/music_player_controls.dart';
 import '../../models/theme/custom_theme.dart';
 import 'widgets/audio_art_place_holder.dart';
 import '../../utils/size_config.dart';
@@ -88,6 +89,13 @@ class _MusicPlayerScreenState extends State<MusicPlayerScreen> {
                   child: AudioArtPlaceHolder(currentTheme: _currentTheme),
                 ),
                 const Spacer(),
+                /*
+                * may need to create new custom slider with reference
+                * of material slider
+                *
+                * look and feel must be same
+                * */
+                // Slider(value: value, onChanged: onChanged),
                 Row(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
@@ -125,10 +133,12 @@ class _MusicPlayerScreenState extends State<MusicPlayerScreen> {
                         ],
                       ),
                     ),
-                    Text('5:14',
+                    Text('8:37',
                         style: TextStyle(color: _currentTheme.textColor)),
                   ],
                 ),
+                SizedBox(height: SizeConfig.screenHeight * 0.05),
+                MusicPlayerControls(currentTheme: _currentTheme),
                 SizedBox(height: SizeConfig.screenHeight * 0.05),
               ],
             ),
