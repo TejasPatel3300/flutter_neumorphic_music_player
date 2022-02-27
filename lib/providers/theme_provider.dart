@@ -39,7 +39,7 @@ class ThemeProvider with ChangeNotifier {
           bgColorTop: AppColors.bgColorDarkTop,
           bgColorBottom: AppColors.bgColorDarkBottom,
           bgGradient: AppColors.gradientModeDark,
-          themeColor: AppColors.themeColorDark,
+          themeColor: AppColors.themeColorLight,
           textColor: AppColors.textColorLight,
           themeModeIcon: const Icon(
             Icons.light_mode_outlined,

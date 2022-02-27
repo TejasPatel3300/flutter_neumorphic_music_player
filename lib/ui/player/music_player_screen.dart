@@ -4,6 +4,7 @@ import 'package:neumorphic_music_player/ui/player/widgets/music_player_controls.
 import '../../models/theme/custom_theme.dart';
 import 'widgets/audio_art_place_holder.dart';
 import '../../utils/size_config.dart';
+import 'package:just_audio/just_audio.dart';
 import 'package:provider/provider.dart';
 
 import '../../constants/enums.dart';
@@ -17,6 +18,16 @@ class MusicPlayerScreen extends StatefulWidget {
 }
 
 class _MusicPlayerScreenState extends State<MusicPlayerScreen> {
+  AudioPlayer? _player;
+  bool _isPlaying = false;
+
+  @override
+  void initState() {
+    super.initState();
+    _player = AudioPlayer();
+    _player?.setAsset('assets/files/sample.mp3');
+  }
+
   @override
   Widget build(BuildContext context) {
     SizeConfig().init(context);
@@ -58,7 +69,7 @@ class _MusicPlayerScreenState extends State<MusicPlayerScreen> {
                   ),
                 ),
                 Text(
-                  'Nicky Minaj',
+                  'Justin Bieber',
                   style: TextStyle(
                     color: _currentTheme.textColor,
                     fontSize: 16,
@@ -138,7 +149,12 @@ class _MusicPlayerScreenState extends State<MusicPlayerScreen> {
                   ],
                 ),
                 SizedBox(height: SizeConfig.screenHeight * 0.05),
-                MusicPlayerControls(currentTheme: _currentTheme),
+                MusicPlayerControls(
+                    currentTheme: _currentTheme,
+                    actionPrevious: () {},
+                    actionPlay: _playAndPause,
+                    actionNext: () {},
+                    isPlaying: _isPlaying),
                 SizedBox(height: SizeConfig.screenHeight * 0.05),
               ],
             ),
@@ -148,6 +164,12 @@ class _MusicPlayerScreenState extends State<MusicPlayerScreen> {
     );
   }
 
+  @override
+  void dispose() {
+    _player?.dispose();
+    super.dispose();
+  }
+
   /// method to change theme mode
   void _changeThemeMode() {
     final _currentThemeMode = context.read<ThemeProvider>().currentThemeMode;
@@ -155,5 +177,15 @@ class _MusicPlayerScreenState extends State<MusicPlayerScreen> {
         _currentThemeMode == CustomThemeMode.light
             ? CustomThemeMode.dark
             : CustomThemeMode.light);
+  }
+
+  void _playAndPause(){
+    if(_isPlaying) {
+      _player?.pause();
+    } else {
+      _player?.play();
+    }
+    _isPlaying = !_isPlaying;
+    setState(() {});
   }
 }

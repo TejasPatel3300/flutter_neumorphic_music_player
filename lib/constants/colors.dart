@@ -14,7 +14,7 @@ class AppColors {
   static const Color themeShadowTopDark = Color(0xFF29A0B8);
   static const Color themeShadowDownDark = Color(0xFF000000);
 
-  static const Color themeShadowTopLight = Color(0xFFFFFFFF);
+  static const Color themeShadowTopLight = Color(0xFFDEDEDE);
   static const Color themeShadowDownLight = Color(0xFF000000);
 
   static const Color themeColorLight = Color(0xFF00B0AA);
