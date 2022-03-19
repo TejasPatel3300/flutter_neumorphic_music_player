@@ -19,13 +19,14 @@ class MusicPlayerScreen extends StatefulWidget {
 
 class _MusicPlayerScreenState extends State<MusicPlayerScreen> {
   AudioPlayer? _player;
+  Stream<Duration>? _playerPositionStream;
   bool _isPlaying = false;
+  double _currentPositionValue = 0;
 
   @override
   void initState() {
     super.initState();
-    _player = AudioPlayer();
-    _player?.setAsset('assets/files/sample.mp3');
+    _initializePlayer();
   }
 
   @override
@@ -106,7 +107,27 @@ class _MusicPlayerScreenState extends State<MusicPlayerScreen> {
                 *
                 * look and feel must be same
                 * */
-                // Slider(value: value, onChanged: onChanged),
+                SliderTheme(
+                  data: SliderThemeData(
+                   thumbShape: SliderComponentShape.noThumb,
+                    activeTrackColor: AppColors.themeColorLight,
+                    inactiveTrackColor: Colors.black45,
+                  ),
+                  child: StreamBuilder<Duration>(
+                    stream: _playerPositionStream?? const Stream<Duration>.empty(),
+                    builder: (context, snapshot) {
+                      return Slider(
+                        value: snapshot.data?.inMilliseconds.toDouble()??0.0,
+                        onChanged: (value) {
+                          // _currentPositionValue = value;
+                          // setState(() {});
+                        },
+                        max: _player?.duration?.inMilliseconds.toDouble()??0.0,
+                      );
+                    }
+                  ),
+                ),
+
                 Row(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
@@ -179,8 +200,15 @@ class _MusicPlayerScreenState extends State<MusicPlayerScreen> {
             : CustomThemeMode.light);
   }
 
-  void _playAndPause(){
-    if(_isPlaying) {
+  void _initializePlayer(){
+    _player = AudioPlayer();
+    _player?.setAsset('assets/files/sample.mp3');
+    _currentPositionValue = _player?.position.inMilliseconds.toDouble() ?? 0.0;
+    _playerPositionStream = _player?.positionStream;
+  }
+
+  void _playAndPause() {
+    if (_isPlaying) {
       _player?.pause();
     } else {
       _player?.play();
