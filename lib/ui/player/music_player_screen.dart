@@ -1,6 +1,7 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
-import 'package:neumorphic_music_player/constants/colors.dart';
-import 'package:neumorphic_music_player/ui/player/widgets/music_player_controls.dart';
+import '../../constants/colors.dart';
+import 'widgets/music_player_controls.dart';
 import '../../models/theme/custom_theme.dart';
 import 'widgets/audio_art_place_holder.dart';
 import '../../utils/size_config.dart';
@@ -21,7 +22,6 @@ class _MusicPlayerScreenState extends State<MusicPlayerScreen> {
   AudioPlayer? _player;
   Stream<Duration>? _playerPositionStream;
   bool _isPlaying = false;
-  double _currentPositionValue = 0;
 
   @override
   void initState() {
@@ -61,7 +61,7 @@ class _MusicPlayerScreenState extends State<MusicPlayerScreen> {
                   ],
                 ),
                 Text(
-                  'High School',
+                  '---- ----',
                   style: TextStyle(
                     color: _currentTheme.textColor,
                     fontSize: 22,
@@ -70,7 +70,7 @@ class _MusicPlayerScreenState extends State<MusicPlayerScreen> {
                   ),
                 ),
                 Text(
-                  'Justin Bieber',
+                  '------- ----',
                   style: TextStyle(
                     color: _currentTheme.textColor,
                     fontSize: 16,
@@ -78,7 +78,6 @@ class _MusicPlayerScreenState extends State<MusicPlayerScreen> {
                     fontWeight: FontWeight.w500,
                   ),
                 ),
-                // SizedBox(height: SizeConfig.screenHeight * 0.05),
                 const Spacer(),
                 Container(
                   height: SizeConfig.screenHeight * 0.20,
@@ -107,67 +106,55 @@ class _MusicPlayerScreenState extends State<MusicPlayerScreen> {
                 *
                 * look and feel must be same
                 * */
-                SliderTheme(
-                  data: SliderThemeData(
-                   thumbShape: SliderComponentShape.noThumb,
-                    activeTrackColor: AppColors.themeColorLight,
-                    inactiveTrackColor: Colors.black45,
-                  ),
+                Flexible(
                   child: StreamBuilder<Duration>(
-                    stream: _playerPositionStream?? const Stream<Duration>.empty(),
-                    builder: (context, snapshot) {
-                      return Slider(
-                        value: snapshot.data?.inMilliseconds.toDouble()??0.0,
-                        onChanged: (value) {
-                          // _currentPositionValue = value;
-                          // setState(() {});
-                        },
-                        max: _player?.duration?.inMilliseconds.toDouble()??0.0,
-                      );
-                    }
-                  ),
-                ),
-
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    Text('3:14',
-                        style: TextStyle(color: _currentTheme.textColor)),
-                    Container(
-                      height: 7,
-                      width: SizeConfig.screenWidth * 0.45,
-                      margin: const EdgeInsets.symmetric(horizontal: 20),
-                      child: Stack(
-                        children: [
-                          Container(
-                            decoration: const BoxDecoration(
-                              gradient: LinearGradient(
-                                  colors: [Colors.black, Colors.black45],
-                                  begin: Alignment.topCenter,
-                                  end: Alignment.bottomCenter),
+                      stream: _playerPositionStream ??
+                          const Stream<Duration>.empty(),
+                      builder: (context, snapshot) {
+                        if (kDebugMode) {
+                          print('snapshot ==> ${snapshot.data?.inMilliseconds ?? 0}');
+                        }
+                        return Row(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            const SizedBox(width: 16),
+                            Text(
+                                _getDurationText(snapshot.data?.inSeconds??0),
+                                style:
+                                    TextStyle(color: _currentTheme.textColor)),
+                            const SizedBox(width: 5),
+                            Flexible(
+                              child: SliderTheme(
+                                data: SliderThemeData(
+                                  thumbShape: SliderComponentShape.noThumb,
+                                  activeTrackColor: AppColors.themeColorLight,
+                                  inactiveTrackColor: Colors.black45,
+                                ),
+                                child: Slider(
+                                  value: snapshot.data?.inMilliseconds
+                                          .toDouble() ??
+                                      0.0,
+                                  onChanged: (value) {
+                                    if (kDebugMode) {
+                                      print(value);
+                                    }
+                                    _player?.seek(
+                                        Duration(milliseconds: value.toInt()));
+                                  },
+                                  max: _getSliderMaxValue(_player?.duration?.inMilliseconds),
+                                  min: 0.0,
+                                ),
+                              ),
                             ),
-                          ),
-                          FractionallySizedBox(
-                            heightFactor: 1,
-                            widthFactor: 0.3,
-                            child: Container(
-                              decoration: const BoxDecoration(
-                                  gradient: LinearGradient(
-                                colors: [
-                                  AppColors.themeColorDark,
-                                  AppColors.themeColorLight
-                                ],
-                                begin: Alignment.topCenter,
-                                end: Alignment.bottomCenter,
-                              )),
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-                    Text('8:37',
-                        style: TextStyle(color: _currentTheme.textColor)),
-                  ],
+                            const SizedBox(width: 5),
+                            Text(
+                                _getDurationText(_player?.duration?.inSeconds??0),
+                                style:
+                                    TextStyle(color: _currentTheme.textColor)),
+                            const SizedBox(width: 16),
+                          ],
+                        );
+                      }),
                 ),
                 SizedBox(height: SizeConfig.screenHeight * 0.05),
                 MusicPlayerControls(
@@ -200,13 +187,31 @@ class _MusicPlayerScreenState extends State<MusicPlayerScreen> {
             : CustomThemeMode.light);
   }
 
-  void _initializePlayer(){
+  /// method to initialize audioPlayer
+  Future<void> _initializePlayer() async{
     _player = AudioPlayer();
-    _player?.setAsset('assets/files/sample.mp3');
-    _currentPositionValue = _player?.position.inMilliseconds.toDouble() ?? 0.0;
+    await _player?.setAsset('assets/files/sample.mp3');
     _playerPositionStream = _player?.positionStream;
   }
 
+  /// method to get duration-text for slider
+  /// [duration] : duration in seconds
+  String _getDurationText(int duration) {
+    return '${duration ~/ 60}:${(duration % 60).toString().padLeft(2,'0')}';
+  }
+
+  /// to get max-value for slider
+  /// [durationInMillis] : duration in milliseconds
+  double _getSliderMaxValue(int? durationInMillis){
+    if(durationInMillis == null){
+      return 0.0;
+    }
+    // added 10 milliseconds extra to avoid error of
+    // assert(value >= min && value <= max)
+    return durationInMillis+10.toDouble();
+  }
+
+  /// to handle play/pause functionality
   void _playAndPause() {
     if (_isPlaying) {
       _player?.pause();
