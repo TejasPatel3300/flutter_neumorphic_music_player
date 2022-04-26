@@ -22,6 +22,7 @@ class _MusicPlayerScreenState extends State<MusicPlayerScreen> {
   AudioPlayer? _player;
   Stream<Duration>? _playerPositionStream;
   bool _isPlaying = false;
+  double _sliderMaxValue = 0;
 
   @override
   void initState() {
@@ -112,14 +113,15 @@ class _MusicPlayerScreenState extends State<MusicPlayerScreen> {
                           const Stream<Duration>.empty(),
                       builder: (context, snapshot) {
                         if (kDebugMode) {
-                          print('snapshot ==> ${snapshot.data?.inMilliseconds ?? 0}');
+                          print(
+                              'snapshot ==> ${snapshot.data?.inMilliseconds ?? 0}');
                         }
                         return Row(
                           mainAxisAlignment: MainAxisAlignment.center,
                           children: [
                             const SizedBox(width: 16),
                             Text(
-                                _getDurationText(snapshot.data?.inSeconds??0),
+                                _getDurationText(snapshot.data?.inSeconds ?? 0),
                                 style:
                                     TextStyle(color: _currentTheme.textColor)),
                             const SizedBox(width: 5),
@@ -141,14 +143,15 @@ class _MusicPlayerScreenState extends State<MusicPlayerScreen> {
                                     _player?.seek(
                                         Duration(milliseconds: value.toInt()));
                                   },
-                                  max: _getSliderMaxValue(_player?.duration?.inMilliseconds),
+                                  max: _sliderMaxValue,
                                   min: 0.0,
                                 ),
                               ),
                             ),
                             const SizedBox(width: 5),
                             Text(
-                                _getDurationText(_player?.duration?.inSeconds??0),
+                                _getDurationText(
+                                    _player?.duration?.inSeconds ?? 0),
                                 style:
                                     TextStyle(color: _currentTheme.textColor)),
                             const SizedBox(width: 16),
@@ -188,27 +191,32 @@ class _MusicPlayerScreenState extends State<MusicPlayerScreen> {
   }
 
   /// method to initialize audioPlayer
-  Future<void> _initializePlayer() async{
+  Future<void> _initializePlayer() async {
     _player = AudioPlayer();
     await _player?.setAsset('assets/files/sample.mp3');
     _playerPositionStream = _player?.positionStream;
+    _sliderMaxValue = _getSliderMaxValue(_player?.duration?.inMilliseconds);
+    if (mounted) {
+      setState(() {});
+    }
   }
 
   /// method to get duration-text for slider
   /// [duration] : duration in seconds
   String _getDurationText(int duration) {
-    return '${duration ~/ 60}:${(duration % 60).toString().padLeft(2,'0')}';
+    return '${duration ~/ 60}:${(duration % 60).toString().padLeft(2, '0')}';
   }
 
   /// to get max-value for slider
   /// [durationInMillis] : duration in milliseconds
-  double _getSliderMaxValue(int? durationInMillis){
-    if(durationInMillis == null){
+  double _getSliderMaxValue(int? durationInMillis) {
+    if (durationInMillis == null) {
       return 0.0;
     }
+    print('duration from player ==> $durationInMillis');
     // added 10 milliseconds extra to avoid error of
     // assert(value >= min && value <= max)
-    return durationInMillis+10.toDouble();
+    return (durationInMillis + 200).toDouble();
   }
 
   /// to handle play/pause functionality
