@@ -1,12 +1,15 @@
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import '../../constants/colors.dart';
+import '../../constants/constants.dart';
 import 'widgets/music_player_controls.dart';
 import '../../models/theme/custom_theme.dart';
 import 'widgets/audio_art_place_holder.dart';
 import '../../utils/size_config.dart';
 import 'package:just_audio/just_audio.dart';
 import 'package:provider/provider.dart';
+import 'package:permission_handler/permission_handler.dart';
 
 import '../../constants/enums.dart';
 import '../../providers/theme_provider.dart';
@@ -28,6 +31,7 @@ class _MusicPlayerScreenState extends State<MusicPlayerScreen> {
   void initState() {
     super.initState();
     _initializePlayer();
+    _getAudioFiles();
   }
 
   @override
@@ -228,5 +232,43 @@ class _MusicPlayerScreenState extends State<MusicPlayerScreen> {
     }
     _isPlaying = !_isPlaying;
     setState(() {});
+  }
+
+  Future<void> _getAudioFiles()async {
+    const _methodChannel = MethodChannel(Constants.audioFilesChannel);
+     final _permissionStatus = await Permission.manageExternalStorage.status;
+     bool _isGranted = _permissionStatus.isGranted;
+     if(_permissionStatus.isDenied){
+       // _showMyDialog();
+       // return;
+       _isGranted = await Permission.manageExternalStorage.request().isGranted;
+     }
+     if(!_isGranted){
+       _showMyDialog();
+       return;
+     }
+    final _result = await _methodChannel.invokeMethod(Constants.methodQueryAudioFiles);
+    return;
+  }
+
+  Future<void> _showMyDialog() async {
+    return showDialog<void>(
+      context: context,
+      barrierDismissible: false, // user must tap button!
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: const Text('MP'),
+          content: const Text('External storage permission needed'),
+          actions: <Widget>[
+            TextButton(
+              child: const Text('Ok'),
+              onPressed: () {
+                Navigator.of(context).pop();
+              },
+            ),
+          ],
+        );
+      },
+    );
   }
 }
