@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:neumorphic_music_player/ui/home/home_screen.dart';
 import 'providers/theme_provider.dart';
 import 'package:provider/provider.dart';
 import 'ui/player/music_player_screen.dart';
@@ -23,7 +24,7 @@ class MyApp extends StatelessWidget {
       title: 'Flutter Demo',
       debugShowCheckedModeBanner: false,
       theme: ThemeData(fontFamily: 'Roboto'),
-      home: const MusicPlayerScreen(),
+      home: const HomeScreen(),
     );
   }
 }

@@ -1,8 +1,10 @@
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:marquee/marquee.dart';
 import '../../constants/colors.dart';
 import '../../constants/constants.dart';
+import '../../models/track/track.dart';
 import 'widgets/music_player_controls.dart';
 import '../../models/theme/custom_theme.dart';
 import 'widgets/audio_art_place_holder.dart';
@@ -15,7 +17,8 @@ import '../../constants/enums.dart';
 import '../../providers/theme_provider.dart';
 
 class MusicPlayerScreen extends StatefulWidget {
-  const MusicPlayerScreen({Key? key}) : super(key: key);
+  const MusicPlayerScreen({Key? key, this.track}) : super(key: key);
+  final Track? track;
 
   @override
   _MusicPlayerScreenState createState() => _MusicPlayerScreenState();
@@ -31,7 +34,6 @@ class _MusicPlayerScreenState extends State<MusicPlayerScreen> {
   void initState() {
     super.initState();
     _initializePlayer();
-    _getAudioFiles();
   }
 
   @override
@@ -66,22 +68,24 @@ class _MusicPlayerScreenState extends State<MusicPlayerScreen> {
                   ],
                 ),
                 Text(
-                  '---- ----',
+                   widget.track?.name??'',
                   style: TextStyle(
                     color: _currentTheme.textColor,
                     fontSize: 22,
                     letterSpacing: 0.1,
                     fontWeight: FontWeight.w600,
                   ),
+                  textAlign: TextAlign.center,
                 ),
                 Text(
-                  '------- ----',
+                  widget.track?.artist??'',
                   style: TextStyle(
                     color: _currentTheme.textColor,
                     fontSize: 16,
                     letterSpacing: 0.1,
                     fontWeight: FontWeight.w500,
                   ),
+                  textAlign: TextAlign.center,
                 ),
                 const Spacer(),
                 Container(
@@ -137,9 +141,14 @@ class _MusicPlayerScreenState extends State<MusicPlayerScreen> {
                                   inactiveTrackColor: Colors.black45,
                                 ),
                                 child: Slider(
-                                  value: snapshot.data?.inMilliseconds
-                                          .toDouble() ??
-                                      0.0,
+                                  value: _sliderMaxValue >
+                                          (snapshot.data?.inMilliseconds
+                                                  .toDouble() ??
+                                              0.0)
+                                      ? snapshot.data?.inMilliseconds
+                                              .toDouble() ??
+                                          0.0
+                                      : _sliderMaxValue,
                                   onChanged: (value) {
                                     if (kDebugMode) {
                                       print(value);
@@ -147,7 +156,9 @@ class _MusicPlayerScreenState extends State<MusicPlayerScreen> {
                                     _player?.seek(
                                         Duration(milliseconds: value.toInt()));
                                   },
-                                  max: _sliderMaxValue,
+                                  max: _sliderMaxValue > 0.0
+                                      ? _sliderMaxValue
+                                      : 0.0,
                                   min: 0.0,
                                 ),
                               ),
@@ -197,7 +208,8 @@ class _MusicPlayerScreenState extends State<MusicPlayerScreen> {
   /// method to initialize audioPlayer
   Future<void> _initializePlayer() async {
     _player = AudioPlayer();
-    await _player?.setAsset('assets/files/sample.mp3');
+    // await _player?.setAsset('assets/files/sample.mp3');
+    await _player?.setUrl(widget.track?.uri ?? '');
     _playerPositionStream = _player?.positionStream;
     _sliderMaxValue = _getSliderMaxValue(_player?.duration?.inMilliseconds);
     if (mounted) {
@@ -214,13 +226,14 @@ class _MusicPlayerScreenState extends State<MusicPlayerScreen> {
   /// to get max-value for slider
   /// [durationInMillis] : duration in milliseconds
   double _getSliderMaxValue(int? durationInMillis) {
+    print(widget.track?.duration);
     if (durationInMillis == null) {
       return 0.0;
     }
     print('duration from player ==> $durationInMillis');
     // added 10 milliseconds extra to avoid error of
     // assert(value >= min && value <= max)
-    return (durationInMillis + 200).toDouble();
+    return (durationInMillis).toDouble();
   }
 
   /// to handle play/pause functionality
@@ -232,23 +245,6 @@ class _MusicPlayerScreenState extends State<MusicPlayerScreen> {
     }
     _isPlaying = !_isPlaying;
     setState(() {});
-  }
-
-  Future<void> _getAudioFiles()async {
-    const _methodChannel = MethodChannel(Constants.audioFilesChannel);
-     final _permissionStatus = await Permission.manageExternalStorage.status;
-     bool _isGranted = _permissionStatus.isGranted;
-     if(_permissionStatus.isDenied){
-       // _showMyDialog();
-       // return;
-       _isGranted = await Permission.manageExternalStorage.request().isGranted;
-     }
-     if(!_isGranted){
-       _showMyDialog();
-       return;
-     }
-    final _result = await _methodChannel.invokeMethod(Constants.methodQueryAudioFiles);
-    return;
   }
 
   Future<void> _showMyDialog() async {

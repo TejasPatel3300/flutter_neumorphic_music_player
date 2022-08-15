@@ -21,14 +21,31 @@ class MainActivity : FlutterActivity() {
 
     override fun configureFlutterEngine(flutterEngine: FlutterEngine) {
         super.configureFlutterEngine(flutterEngine)
-        MethodChannel(flutterEngine.dartExecutor.binaryMessenger, Constants.AUDIO_FILES_CHANNEL).setMethodCallHandler {
-                call, result ->
+        MethodChannel(
+            flutterEngine.dartExecutor.binaryMessenger,
+            Constants.AUDIO_FILES_CHANNEL
+        ).setMethodCallHandler { call, result ->
             // Note: this method is invoked on the main thread.
-            when (call.method){
-                 Constants.METHOD_QUERY_AUDIO_FILES ->{
+            when (call.method) {
+                Constants.METHOD_QUERY_AUDIO_FILES -> {
                     val audioList = getAudioFiles()
-                    for (audio in audioList){
-                        Log.d("audiofile", audio.toString())
+                    val audioFiles = mutableListOf<Map<String, Any>>()
+                    if (audioList.isEmpty()) {
+                        result.error("Error", "No music files found", null);
+                    } else {
+                        for (audio in audioList) {
+                            audioFiles.add(
+                                mapOf(
+                                    "name" to audio.name,
+                                    "uri" to audio.uri.toString(),
+                                    "duration" to audio.duration,
+                                    "size" to audio.size,
+                                    "artist" to audio.artist
+                                )
+                            )
+                            Log.d("audiofile", audio.toString())
+                        }
+                         result.success(audioFiles)
                     }
                 }
 
@@ -37,7 +54,7 @@ class MainActivity : FlutterActivity() {
     }
 
 
-    private fun getAudioFiles() : List<AudioModel> {
+    private fun getAudioFiles(): List<AudioModel> {
         val audioList = mutableListOf<AudioModel>()
 
         val collection =
@@ -59,7 +76,10 @@ class MainActivity : FlutterActivity() {
         // Show only videos that are at least 5 minutes in duration.
         val selection = "${MediaStore.Audio.Media.DURATION} >= ?"
         val selectionArgs = arrayOf(
-            java.util.concurrent.TimeUnit.MILLISECONDS.convert(5, java.util.concurrent.TimeUnit.MINUTES)
+            java.util.concurrent.TimeUnit.MILLISECONDS.convert(
+                5,
+                java.util.concurrent.TimeUnit.MINUTES
+            )
                 .toString()
         )
 
@@ -81,6 +101,7 @@ class MainActivity : FlutterActivity() {
             val durationColumn =
                 cursor.getColumnIndexOrThrow(MediaStore.Audio.Media.DURATION)
             val sizeColumn = cursor.getColumnIndexOrThrow(MediaStore.Audio.Media.SIZE)
+            val artistColumns = cursor.getColumnIndexOrThrow(MediaStore.Audio.Media.ARTIST)
 
             while (cursor.moveToNext()) {
                 // Get values of columns for a given Audio.
@@ -88,6 +109,7 @@ class MainActivity : FlutterActivity() {
                 val name = cursor.getString(nameColumn)
                 val duration = cursor.getInt(durationColumn)
                 val size = cursor.getInt(sizeColumn)
+                val artist = cursor.getString(artistColumns)
 
                 val contentUri: Uri = ContentUris.withAppendedId(
                     MediaStore.Audio.Media.EXTERNAL_CONTENT_URI,
@@ -96,7 +118,7 @@ class MainActivity : FlutterActivity() {
 
                 // Stores column values and the contentUri in a local object
                 // that represents the media file.
-                audioList += AudioModel(contentUri, name, duration, size)
+                audioList += AudioModel(contentUri, name, duration, size, artist)
             }
         }
         return audioList
