@@ -1,13 +1,17 @@
 import 'package:flutter/material.dart';
-import 'providers/theme_provider.dart';
 import 'package:provider/provider.dart';
-import 'ui/player/music_player_screen.dart';
+
+import 'providers/player_provider.dart';
+import 'providers/theme_provider.dart';
+import 'ui/home/home_screen.dart';
 
 void main() {
+  WidgetsFlutterBinding.ensureInitialized();
   runApp(
     MultiProvider(
       providers: [
         ChangeNotifierProvider(create: (_) => ThemeProvider()),
+        ChangeNotifierProvider(create: (_) => PlayerProvider()),
       ],
       child: const MyApp(),
     ),
@@ -23,7 +27,7 @@ class MyApp extends StatelessWidget {
       title: 'Flutter Demo',
       debugShowCheckedModeBanner: false,
       theme: ThemeData(fontFamily: 'Roboto'),
-      home: const MusicPlayerScreen(),
+      home: const HomeScreen(),
     );
   }
 }

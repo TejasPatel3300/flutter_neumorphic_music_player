@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
-import 'package:neumorphic_music_player/constants/enums.dart';
 
 import '../constants/colors.dart';
+import '../constants/enums.dart';
 import '../models/theme/custom_theme.dart';
 
 class ThemeProvider with ChangeNotifier {
