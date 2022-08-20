@@ -1,17 +1,14 @@
-import 'dart:collection';
-
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:neumorphic_music_player/ui/player/music_player_screen.dart';
-import 'package:provider/provider.dart';
 import 'package:permission_handler/permission_handler.dart';
+import 'package:provider/provider.dart';
 
 import '../../constants/constants.dart';
 import '../../constants/enums.dart';
-import '../../models/theme/custom_theme.dart';
 import '../../models/track/track.dart';
 import '../../providers/theme_provider.dart';
 import '../../utils/size_config.dart';
+import '../player/music_player_screen.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({Key? key}) : super(key: key);
@@ -32,8 +29,6 @@ class _HomeScreenState extends State<HomeScreen> {
   @override
   Widget build(BuildContext context) {
     SizeConfig().init(context);
-    CustomTheme _currentTheme =
-        Provider.of<ThemeProvider>(context).currentTheme;
     return Scaffold(
       body: Container(
         decoration: BoxDecoration(
@@ -63,18 +58,31 @@ class _HomeScreenState extends State<HomeScreen> {
                 Expanded(
                     child: ListView.builder(
                   itemCount: _audioFiles.length,
-                  itemBuilder: (context, index) =>
-                      ListTile(title: Text(_audioFiles[index].name),onTap: (){
-                        Navigator.of(context).push(MaterialPageRoute(builder: (context) => MusicPlayerScreen(
-                          track: _audioFiles[index],
-                        ),));
-                      },),
+                  itemBuilder: (context, index) => _trackTile(index, context),
                 ))
               ],
             ),
           ),
         ),
       ),
+    );
+  }
+
+  Widget _trackTile(int index, BuildContext context) {
+    return ListTile(
+      title: Text(
+        _audioFiles[index].name,
+        style: TextStyle(
+          color: Provider.of<ThemeProvider>(context).currentTheme.textColor,
+        ),
+      ),
+      onTap: () {
+        Navigator.of(context).push(MaterialPageRoute(
+          builder: (context) => MusicPlayerScreen(
+            track: _audioFiles[index],
+          ),
+        ));
+      },
     );
   }
 
@@ -104,11 +112,9 @@ class _HomeScreenState extends State<HomeScreen> {
         ?.cast<Map<dynamic, dynamic>>()
         .map((e) => e.cast<String, dynamic>())
         .toList();
-    // final _tempList = <Track>[];
+
     if (_refinedList != null) {
       final _audioList = _refinedList.map((e) => Track.fromJson(e)).toList();
-      // print(_result);
-      // final _audioList = _result.map((e) => Track.fromJson(e)).toList();
       _audioFiles = _audioList;
       setState(() {});
     }

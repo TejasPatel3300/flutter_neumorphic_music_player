@@ -1,20 +1,16 @@
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
-import 'package:marquee/marquee.dart';
-import '../../constants/colors.dart';
-import '../../constants/constants.dart';
-import '../../models/track/track.dart';
-import 'widgets/music_player_controls.dart';
-import '../../models/theme/custom_theme.dart';
-import 'widgets/audio_art_place_holder.dart';
-import '../../utils/size_config.dart';
-import 'package:just_audio/just_audio.dart';
 import 'package:provider/provider.dart';
-import 'package:permission_handler/permission_handler.dart';
 
+import '../../constants/colors.dart';
 import '../../constants/enums.dart';
+import '../../models/theme/custom_theme.dart';
+import '../../models/track/track.dart';
+import '../../providers/player_provider.dart';
 import '../../providers/theme_provider.dart';
+import '../../utils/size_config.dart';
+import 'widgets/audio_art_place_holder.dart';
+import 'widgets/music_player_controls.dart';
 
 class MusicPlayerScreen extends StatefulWidget {
   const MusicPlayerScreen({Key? key, this.track}) : super(key: key);
@@ -25,8 +21,6 @@ class MusicPlayerScreen extends StatefulWidget {
 }
 
 class _MusicPlayerScreenState extends State<MusicPlayerScreen> {
-  AudioPlayer? _player;
-  Stream<Duration>? _playerPositionStream;
   bool _isPlaying = false;
   double _sliderMaxValue = 0;
 
@@ -109,16 +103,9 @@ class _MusicPlayerScreenState extends State<MusicPlayerScreen> {
                   child: AudioArtPlaceHolder(currentTheme: _currentTheme),
                 ),
                 const Spacer(),
-                /*
-                * may need to create new custom slider with reference
-                * of material slider
-                *
-                * look and feel must be same
-                * */
                 Flexible(
                   child: StreamBuilder<Duration>(
-                      stream: _playerPositionStream ??
-                          const Stream<Duration>.empty(),
+                      stream: context.read<PlayerProvider>().player.positionStream,
                       builder: (context, snapshot) {
                         if (kDebugMode) {
                           print(
@@ -153,8 +140,7 @@ class _MusicPlayerScreenState extends State<MusicPlayerScreen> {
                                     if (kDebugMode) {
                                       print(value);
                                     }
-                                    _player?.seek(
-                                        Duration(milliseconds: value.toInt()));
+                                    _seek(value.toInt());
                                   },
                                   max: _sliderMaxValue > 0.0
                                       ? _sliderMaxValue
@@ -166,7 +152,7 @@ class _MusicPlayerScreenState extends State<MusicPlayerScreen> {
                             const SizedBox(width: 5),
                             Text(
                                 _getDurationText(
-                                    _player?.duration?.inSeconds ?? 0),
+                                    context.read<PlayerProvider>().player.duration?.inSeconds ?? 0),
                                 style:
                                     TextStyle(color: _currentTheme.textColor)),
                             const SizedBox(width: 16),
@@ -192,7 +178,6 @@ class _MusicPlayerScreenState extends State<MusicPlayerScreen> {
 
   @override
   void dispose() {
-    _player?.dispose();
     super.dispose();
   }
 
@@ -207,11 +192,12 @@ class _MusicPlayerScreenState extends State<MusicPlayerScreen> {
 
   /// method to initialize audioPlayer
   Future<void> _initializePlayer() async {
-    _player = AudioPlayer();
-    // await _player?.setAsset('assets/files/sample.mp3');
-    await _player?.setUrl(widget.track?.uri ?? '');
-    _playerPositionStream = _player?.positionStream;
-    _sliderMaxValue = _getSliderMaxValue(_player?.duration?.inMilliseconds);
+    bool _playing = context.read<PlayerProvider>().player.playing;
+    if(_playing){
+      await context.read<PlayerProvider>().player.stop();
+    }
+    await context.read<PlayerProvider>().loadMusic(widget.track);
+    _sliderMaxValue = _getSliderMaxValue( context.read<PlayerProvider>().player.duration?.inMilliseconds);
     if (mounted) {
       setState(() {});
     }
@@ -226,45 +212,30 @@ class _MusicPlayerScreenState extends State<MusicPlayerScreen> {
   /// to get max-value for slider
   /// [durationInMillis] : duration in milliseconds
   double _getSliderMaxValue(int? durationInMillis) {
-    print(widget.track?.duration);
+    if (kDebugMode) {
+      print('duration from track data ==> ${widget.track?.duration}');
+    }
     if (durationInMillis == null) {
       return 0.0;
     }
-    print('duration from player ==> $durationInMillis');
-    // added 10 milliseconds extra to avoid error of
-    // assert(value >= min && value <= max)
+    if (kDebugMode) {
+      print('duration from player ==> $durationInMillis');
+    }
     return (durationInMillis).toDouble();
   }
 
   /// to handle play/pause functionality
   void _playAndPause() {
     if (_isPlaying) {
-      _player?.pause();
+      context.read<PlayerProvider>().pause();
     } else {
-      _player?.play();
+      context.read<PlayerProvider>().play();
     }
     _isPlaying = !_isPlaying;
     setState(() {});
   }
 
-  Future<void> _showMyDialog() async {
-    return showDialog<void>(
-      context: context,
-      barrierDismissible: false, // user must tap button!
-      builder: (BuildContext context) {
-        return AlertDialog(
-          title: const Text('MP'),
-          content: const Text('External storage permission needed'),
-          actions: <Widget>[
-            TextButton(
-              child: const Text('Ok'),
-              onPressed: () {
-                Navigator.of(context).pop();
-              },
-            ),
-          ],
-        );
-      },
-    );
+  void _seek(int durationMillis) {
+    context.read<PlayerProvider>().seek(durationMillis);
   }
 }

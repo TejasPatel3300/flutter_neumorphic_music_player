@@ -1,14 +1,17 @@
 import 'package:flutter/material.dart';
-import 'package:neumorphic_music_player/ui/home/home_screen.dart';
-import 'providers/theme_provider.dart';
 import 'package:provider/provider.dart';
-import 'ui/player/music_player_screen.dart';
+
+import 'providers/player_provider.dart';
+import 'providers/theme_provider.dart';
+import 'ui/home/home_screen.dart';
 
 void main() {
+  WidgetsFlutterBinding.ensureInitialized();
   runApp(
     MultiProvider(
       providers: [
         ChangeNotifierProvider(create: (_) => ThemeProvider()),
+        ChangeNotifierProvider(create: (_) => PlayerProvider()),
       ],
       child: const MyApp(),
     ),
