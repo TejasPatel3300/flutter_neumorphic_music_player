@@ -31,7 +31,7 @@ class MainActivity : FlutterActivity() {
                     val audioList = getAudioFiles()
                     val audioFiles = mutableListOf<Map<String, Any>>()
                     if (audioList.isEmpty()) {
-                        result.error("Error", "No music files found", null);
+                        result.error("Error", "No music files found", null)
                     } else {
                         for (audio in audioList) {
                             audioFiles.add(
@@ -45,7 +45,7 @@ class MainActivity : FlutterActivity() {
                             )
                             Log.d("audiofile", audio.toString())
                         }
-                         result.success(audioFiles)
+                        result.success(audioFiles)
                     }
                 }
 
@@ -66,38 +66,34 @@ class MainActivity : FlutterActivity() {
                 MediaStore.Audio.Media.EXTERNAL_CONTENT_URI
             }
 
-        val projection = arrayOf(
-            MediaStore.Audio.Media._ID,
-            MediaStore.Audio.Media.DISPLAY_NAME,
-            MediaStore.Audio.Media.DURATION,
-            MediaStore.Audio.Media.SIZE
-        )
+//        val projection = arrayOf(
+//            MediaStore.Audio.Media._ID,
+//            MediaStore.Audio.Media.DISPLAY_NAME,
+//            MediaStore.Audio.Media.DURATION,
+//            MediaStore.Audio.Media.SIZE
+//        )
 
-        // Show only videos that are at least 5 minutes in duration.
-        val selection = "${MediaStore.Audio.Media.DURATION} >= ?"
-        val selectionArgs = arrayOf(
-            java.util.concurrent.TimeUnit.MILLISECONDS.convert(
-                5,
-                java.util.concurrent.TimeUnit.MINUTES
-            )
-                .toString()
-        )
+        // Show only get audios that are more than 0 seconds and categorized as music.
+        val selection = "${MediaStore.Audio.Media.DURATION} > 0 AND ${MediaStore.Audio.Media.IS_MUSIC} != 0"
+//        val selectionArgs = arrayOf(
+//            "0",
+//        )
 
         // Display videos in alphabetical order based on their display name.
-        val sortOrder = "${MediaStore.Audio.Media.DISPLAY_NAME} ASC"
+        val sortOrder = "${MediaStore.Audio.Media.TITLE} ASC"
 
 //        val query = contentResolver.query(
 //            collection, projection, selection, selectionArgs, sortOrder,
 //        )
         val query = contentResolver.query(
-            collection, null, null, null, null,
+            collection, null, selection, null, sortOrder,
         )
 
         query?.use { cursor ->
             // Cache column indices.
             val idColumn = cursor.getColumnIndexOrThrow(MediaStore.Audio.Media._ID)
-            val nameColumn =
-                cursor.getColumnIndexOrThrow(MediaStore.Audio.Media.DISPLAY_NAME)
+            val titleColumn =
+                cursor.getColumnIndexOrThrow(MediaStore.Audio.Media.TITLE)
             val durationColumn =
                 cursor.getColumnIndexOrThrow(MediaStore.Audio.Media.DURATION)
             val sizeColumn = cursor.getColumnIndexOrThrow(MediaStore.Audio.Media.SIZE)
@@ -106,7 +102,7 @@ class MainActivity : FlutterActivity() {
             while (cursor.moveToNext()) {
                 // Get values of columns for a given Audio.
                 val id = cursor.getLong(idColumn)
-                val name = cursor.getString(nameColumn)
+                val title = cursor.getString(titleColumn)
                 val duration = cursor.getInt(durationColumn)
                 val size = cursor.getInt(sizeColumn)
                 val artist = cursor.getString(artistColumns)
@@ -118,7 +114,7 @@ class MainActivity : FlutterActivity() {
 
                 // Stores column values and the contentUri in a local object
                 // that represents the media file.
-                audioList += AudioModel(contentUri, name, duration, size, artist)
+                audioList += AudioModel(contentUri, title, duration, size, artist)
             }
         }
         return audioList

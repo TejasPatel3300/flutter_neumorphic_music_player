@@ -1,11 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:just_audio/just_audio.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'package:provider/provider.dart';
 
 import '../../constants/constants.dart';
 import '../../constants/enums.dart';
 import '../../models/track/track.dart';
+import '../../providers/player_provider.dart';
 import '../../providers/theme_provider.dart';
 import '../../utils/size_config.dart';
 import '../player/music_player_screen.dart';
@@ -18,7 +20,7 @@ class HomeScreen extends StatefulWidget {
 }
 
 class _HomeScreenState extends State<HomeScreen> {
-  List<Track> _audioFiles = [];
+  List<IndexedAudioSource> _playlistAudioSources= [];
 
   @override
   void initState() {
@@ -57,7 +59,7 @@ class _HomeScreenState extends State<HomeScreen> {
                 ),
                 Expanded(
                     child: ListView.builder(
-                  itemCount: _audioFiles.length,
+                  itemCount: _playlistAudioSources.length,
                   itemBuilder: (context, index) => _trackTile(index, context),
                 ))
               ],
@@ -69,9 +71,11 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 
   Widget _trackTile(int index, BuildContext context) {
+    final _title = (_playlistAudioSources[index].tag as Map<String,dynamic>)[Constants.audioTagTitle] as String;
+    final _artist = (_playlistAudioSources[index].tag as Map<String,dynamic>)[Constants.audioTagArtist] as String;
     return ListTile(
       title: Text(
-        _audioFiles[index].name,
+        _title,
         style: TextStyle(
           color: Provider.of<ThemeProvider>(context).currentTheme.textColor,
         ),
@@ -79,7 +83,9 @@ class _HomeScreenState extends State<HomeScreen> {
       onTap: () {
         Navigator.of(context).push(MaterialPageRoute(
           builder: (context) => MusicPlayerScreen(
-            track: _audioFiles[index],
+            title: _title,
+            artist: _artist,
+            currentIndex: index,
           ),
         ));
       },
@@ -115,7 +121,8 @@ class _HomeScreenState extends State<HomeScreen> {
 
     if (_refinedList != null) {
       final _audioList = _refinedList.map((e) => Track.fromJson(e)).toList();
-      _audioFiles = _audioList;
+      await context.read<PlayerProvider>().setInitialPlaylist(_audioList);
+      _playlistAudioSources = context.read<PlayerProvider>().playlistAudioSources;
       setState(() {});
     }
     return;
