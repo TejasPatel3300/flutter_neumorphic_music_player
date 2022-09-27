@@ -7,4 +7,5 @@ class Constants{
   // audioSource tag parameter
   static const audioTagTitle = 'title';
   static const audioTagArtist = 'artist';
+  static const audioBitrate = 'bitrate';
 }

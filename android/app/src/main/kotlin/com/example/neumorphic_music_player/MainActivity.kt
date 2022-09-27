@@ -40,7 +40,8 @@ class MainActivity : FlutterActivity() {
                                     "uri" to audio.uri.toString(),
                                     "duration" to audio.duration,
                                     "size" to audio.size,
-                                    "artist" to audio.artist
+                                    "artist" to audio.artist,
+                                    "bitrate" to audio.bitrate
                                 )
                             )
                             Log.d("audiofile", audio.toString())
@@ -74,7 +75,8 @@ class MainActivity : FlutterActivity() {
 //        )
 
         // Show only get audios that are more than 0 seconds and categorized as music.
-        val selection = "${MediaStore.Audio.Media.DURATION} > 0 AND ${MediaStore.Audio.Media.IS_MUSIC} != 0"
+        val selection =
+            "${MediaStore.Audio.Media.DURATION} > 0 AND ${MediaStore.Audio.Media.IS_MUSIC} != 0"
 //        val selectionArgs = arrayOf(
 //            "0",
 //        )
@@ -98,6 +100,7 @@ class MainActivity : FlutterActivity() {
                 cursor.getColumnIndexOrThrow(MediaStore.Audio.Media.DURATION)
             val sizeColumn = cursor.getColumnIndexOrThrow(MediaStore.Audio.Media.SIZE)
             val artistColumns = cursor.getColumnIndexOrThrow(MediaStore.Audio.Media.ARTIST)
+            val bitRateColumns = cursor.getColumnIndexOrThrow(MediaStore.Audio.Media.BITRATE)
 
             while (cursor.moveToNext()) {
                 // Get values of columns for a given Audio.
@@ -106,6 +109,9 @@ class MainActivity : FlutterActivity() {
                 val duration = cursor.getInt(durationColumn)
                 val size = cursor.getInt(sizeColumn)
                 val artist = cursor.getString(artistColumns)
+                val bitrate = cursor.getString(bitRateColumns)
+
+                Log.d("bitrate", bitrate)
 
                 val contentUri: Uri = ContentUris.withAppendedId(
                     MediaStore.Audio.Media.EXTERNAL_CONTENT_URI,
@@ -114,7 +120,7 @@ class MainActivity : FlutterActivity() {
 
                 // Stores column values and the contentUri in a local object
                 // that represents the media file.
-                audioList += AudioModel(contentUri, title, duration, size, artist)
+                audioList += AudioModel(contentUri, title, duration, size, artist, bitrate)
             }
         }
         return audioList

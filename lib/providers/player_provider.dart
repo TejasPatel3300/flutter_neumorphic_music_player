@@ -25,6 +25,7 @@ class PlayerProvider with ChangeNotifier {
               tag: {
                 Constants.audioTagTitle : e.name,
                 Constants.audioTagArtist : e.artist,
+                Constants.audioBitrate : e.bitrate,
               },
             ))
         .toList();
@@ -81,8 +82,9 @@ class PlayerProvider with ChangeNotifier {
   void _setTitleAndArtist(int index){
     currentTrackTitle = (playlistAudioSources[index].tag
     as Map<String, dynamic>)[Constants.audioTagTitle] as String;
-    currentTrackArtist = (playlistAudioSources[index].tag
+    final artist = (playlistAudioSources[index].tag
     as Map<String, dynamic>)[Constants.audioTagArtist] as String;
+    currentTrackArtist = artist == '<unknown>' ? 'Unknown': artist;
     notifyListeners();
   }
 

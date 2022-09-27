@@ -8,6 +8,7 @@ class Track {
     required this.artist,
     required this.uri,
     required this.duration,
+    required this.bitrate,
     required this.size,
   });
 
@@ -18,6 +19,7 @@ class Track {
   final String name;
   final String artist;
   final String uri;
+  final String bitrate;
   final int duration;
   final int size;
 }
