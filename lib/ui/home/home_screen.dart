@@ -158,6 +158,7 @@ class _HomeScreenState extends State<HomeScreen> {
         as Map<String, dynamic>)[Constants.audioTagArtist] as String;
     final _bitrate = (_playlistAudioSources[index].tag
         as Map<String, dynamic>)[Constants.audioBitrate] as String?;
+
     return ListTile(
       title: Column(
         mainAxisSize: MainAxisSize.min,
@@ -208,12 +209,19 @@ class _HomeScreenState extends State<HomeScreen> {
             context: context,
             builder: (context) {
               return Container(
-                height: 300,
+
                 width: double.infinity,
                 decoration: BoxDecoration(
                   gradient: Provider.of<ThemeProvider>(context)
                       .currentTheme
                       .bgGradient,
+                ),
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Text('Add to playlist'),
+                    Text('Details'),
+                  ],
                 ),
               );
             },

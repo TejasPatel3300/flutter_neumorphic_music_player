@@ -1,3 +1,10 @@
+/*
+ * Created by Tejas Patel on 10/17/22, 11:24 PM
+ * Copyright (c) 2022 . All rights reserved.
+ * Last modified 10/17/22, 11:17 PM
+ */
+
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:just_audio/just_audio.dart';
 
@@ -23,9 +30,9 @@ class PlayerProvider with ChangeNotifier {
         .map((e) => AudioSource.uri(
               Uri.parse(e.uri),
               tag: {
-                Constants.audioTagTitle : e.name,
-                Constants.audioTagArtist : e.artist,
-                Constants.audioBitrate : e.bitrate,
+                Constants.audioTagTitle: e.name,
+                Constants.audioTagArtist: e.artist,
+                Constants.audioBitrate: e.bitrate,
               },
             ))
         .toList();
@@ -56,6 +63,9 @@ class PlayerProvider with ChangeNotifier {
     _setTitleAndArtist(index);
     await _player.seek(Duration.zero,
         index: index); // Skip to the start of the track of given index
+    if (kDebugMode) {
+      print('icymetadata: ${_player.icyMetadata?.info?.url}');
+    }
   }
 
   Future<void> seekToNext() async {
@@ -67,6 +77,9 @@ class PlayerProvider with ChangeNotifier {
     }
     _setTitleAndArtist(_currentIndex! + 1);
     await _player.seekToNext(); // Skip to the next item
+    if (kDebugMode) {
+      print('icymetadata: ${_player.icyMetadata?.info?.url}');
+    }
   }
 
   Future<void> seekToPrevious() async {
@@ -77,24 +90,25 @@ class PlayerProvider with ChangeNotifier {
     }
     _setTitleAndArtist(_currentIndex! - 1);
     await _player.seekToPrevious(); // Skip to the previous item
+    if (kDebugMode) {
+      print('icymetadata: ${_player.icyMetadata?.info?.url}');
+    }
   }
 
-  void _setTitleAndArtist(int index){
+  void _setTitleAndArtist(int index) {
     currentTrackTitle = (playlistAudioSources[index].tag
-    as Map<String, dynamic>)[Constants.audioTagTitle] as String;
+        as Map<String, dynamic>)[Constants.audioTagTitle] as String;
     final artist = (playlistAudioSources[index].tag
-    as Map<String, dynamic>)[Constants.audioTagArtist] as String;
-    currentTrackArtist = artist == '<unknown>' ? 'Unknown': artist;
+        as Map<String, dynamic>)[Constants.audioTagArtist] as String;
+    currentTrackArtist = artist == '<unknown>' ? 'Unknown' : artist;
     notifyListeners();
   }
 
-
-    void _listenForChangesInSequenceState() {
-      _player.sequenceStateStream.listen((sequenceState) {
-        if (sequenceState == null) return;
-        final _currentIndex = sequenceState.currentIndex;
-        _setTitleAndArtist(_currentIndex);
-      });
-    }
-
+  void _listenForChangesInSequenceState() {
+    _player.sequenceStateStream.listen((sequenceState) {
+      if (sequenceState == null) return;
+      final _currentIndex = sequenceState.currentIndex;
+      _setTitleAndArtist(_currentIndex);
+    });
+  }
 }

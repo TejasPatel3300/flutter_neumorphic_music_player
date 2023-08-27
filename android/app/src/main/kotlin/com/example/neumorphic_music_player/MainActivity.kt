@@ -117,6 +117,7 @@ class MainActivity : FlutterActivity() {
                     MediaStore.Audio.Media.EXTERNAL_CONTENT_URI,
                     id
                 )
+                Log.d("audioFilePath","${contentUri.path}")
 
                 // Stores column values and the contentUri in a local object
                 // that represents the media file.
