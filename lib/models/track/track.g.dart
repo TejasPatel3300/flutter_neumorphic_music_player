@@ -11,6 +11,7 @@ Track _$TrackFromJson(Map<String, dynamic> json) => Track(
       artist: json['artist'] as String,
       uri: json['uri'] as String,
       duration: json['duration'] as int,
+      bitrate: json['bitrate'] as String,
       size: json['size'] as int,
     );
 
@@ -18,6 +19,7 @@ Map<String, dynamic> _$TrackToJson(Track instance) => <String, dynamic>{
       'name': instance.name,
       'artist': instance.artist,
       'uri': instance.uri,
+      'bitrate': instance.bitrate,
       'duration': instance.duration,
       'size': instance.size,
     };

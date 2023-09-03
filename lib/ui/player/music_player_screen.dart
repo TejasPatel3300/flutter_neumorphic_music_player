@@ -5,7 +5,6 @@ import 'package:provider/provider.dart';
 import '../../constants/colors.dart';
 import '../../constants/enums.dart';
 import '../../models/theme/custom_theme.dart';
-import '../../models/track/track.dart';
 import '../../providers/player_provider.dart';
 import '../../providers/theme_provider.dart';
 import '../../utils/size_config.dart';
@@ -13,8 +12,15 @@ import 'widgets/audio_art_place_holder.dart';
 import 'widgets/music_player_controls.dart';
 
 class MusicPlayerScreen extends StatefulWidget {
-  const MusicPlayerScreen({Key? key, this.track}) : super(key: key);
-  final Track? track;
+  const MusicPlayerScreen({
+    Key? key,
+    required this.title,
+    required this.artist,
+    required this.currentIndex,
+  }) : super(key: key);
+  final String title;
+  final String artist;
+  final int currentIndex;
 
   @override
   _MusicPlayerScreenState createState() => _MusicPlayerScreenState();
@@ -46,7 +52,7 @@ class _MusicPlayerScreenState extends State<MusicPlayerScreen> {
             height: double.infinity,
             child: Column(
               children: [
-                SizedBox(height: SizeConfig.screenHeight * 0.05),
+                SizedBox(height: SizeConfig.screenHeight * 0.01),
                 Row(
                   mainAxisAlignment: MainAxisAlignment.end,
                   children: [
@@ -62,7 +68,7 @@ class _MusicPlayerScreenState extends State<MusicPlayerScreen> {
                   ],
                 ),
                 Text(
-                   widget.track?.name??'',
+                  context.watch<PlayerProvider>().currentTrackTitle,
                   style: TextStyle(
                     color: _currentTheme.textColor,
                     fontSize: 22,
@@ -70,9 +76,11 @@ class _MusicPlayerScreenState extends State<MusicPlayerScreen> {
                     fontWeight: FontWeight.w600,
                   ),
                   textAlign: TextAlign.center,
+                  maxLines: 2,
+                  overflow: TextOverflow.ellipsis,
                 ),
                 Text(
-                  widget.track?.artist??'',
+                  context.watch<PlayerProvider>().currentTrackArtist,
                   style: TextStyle(
                     color: _currentTheme.textColor,
                     fontSize: 16,
@@ -105,7 +113,8 @@ class _MusicPlayerScreenState extends State<MusicPlayerScreen> {
                 const Spacer(),
                 Flexible(
                   child: StreamBuilder<Duration>(
-                      stream: context.read<PlayerProvider>().player.positionStream,
+                      stream:
+                          context.read<PlayerProvider>().player.positionStream,
                       builder: (context, snapshot) {
                         if (kDebugMode) {
                           print(
@@ -151,8 +160,12 @@ class _MusicPlayerScreenState extends State<MusicPlayerScreen> {
                             ),
                             const SizedBox(width: 5),
                             Text(
-                                _getDurationText(
-                                    context.read<PlayerProvider>().player.duration?.inSeconds ?? 0),
+                                _getDurationText(context
+                                        .read<PlayerProvider>()
+                                        .player
+                                        .duration
+                                        ?.inSeconds ??
+                                    0),
                                 style:
                                     TextStyle(color: _currentTheme.textColor)),
                             const SizedBox(width: 16),
@@ -163,9 +176,9 @@ class _MusicPlayerScreenState extends State<MusicPlayerScreen> {
                 SizedBox(height: SizeConfig.screenHeight * 0.05),
                 MusicPlayerControls(
                     currentTheme: _currentTheme,
-                    actionPrevious: () {},
+                    actionPrevious: _playPrevious,
                     actionPlay: _playAndPause,
-                    actionNext: () {},
+                    actionNext: _playNext,
                     isPlaying: _isPlaying),
                 SizedBox(height: SizeConfig.screenHeight * 0.05),
               ],
@@ -193,11 +206,12 @@ class _MusicPlayerScreenState extends State<MusicPlayerScreen> {
   /// method to initialize audioPlayer
   Future<void> _initializePlayer() async {
     bool _playing = context.read<PlayerProvider>().player.playing;
-    if(_playing){
+    if (_playing) {
       await context.read<PlayerProvider>().player.stop();
     }
-    await context.read<PlayerProvider>().loadMusic(widget.track);
-    _sliderMaxValue = _getSliderMaxValue( context.read<PlayerProvider>().player.duration?.inMilliseconds);
+    await context.read<PlayerProvider>().seekToIndex(widget.currentIndex);
+    _sliderMaxValue = _getSliderMaxValue(
+        context.read<PlayerProvider>().player.duration?.inMilliseconds);
     if (mounted) {
       setState(() {});
     }
@@ -212,9 +226,7 @@ class _MusicPlayerScreenState extends State<MusicPlayerScreen> {
   /// to get max-value for slider
   /// [durationInMillis] : duration in milliseconds
   double _getSliderMaxValue(int? durationInMillis) {
-    if (kDebugMode) {
-      print('duration from track data ==> ${widget.track?.duration}');
-    }
+
     if (durationInMillis == null) {
       return 0.0;
     }
@@ -233,6 +245,24 @@ class _MusicPlayerScreenState extends State<MusicPlayerScreen> {
     }
     _isPlaying = !_isPlaying;
     setState(() {});
+  }
+
+  Future<void> _playNext() async {
+    await context.read<PlayerProvider>().seekToNext();
+    _sliderMaxValue = _getSliderMaxValue(
+        context.read<PlayerProvider>().player.duration?.inMilliseconds);
+    if (mounted) {
+      setState(() {});
+    }
+  }
+
+  Future<void> _playPrevious() async {
+    await context.read<PlayerProvider>().seekToPrevious();
+    _sliderMaxValue = _getSliderMaxValue(
+        context.read<PlayerProvider>().player.duration?.inMilliseconds);
+    if (mounted) {
+      setState(() {});
+    }
   }
 
   void _seek(int durationMillis) {
