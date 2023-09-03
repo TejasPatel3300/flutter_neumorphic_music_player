@@ -8,5 +8,6 @@ data class AudioModel(
     val name: String,
     val duration: Int,
     val size: Int,
-    val artist: String
+    val artist: String,
+val bitrate: String,
 )

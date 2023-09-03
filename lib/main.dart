@@ -1,12 +1,17 @@
+import 'dart:io';
+
+import 'package:device_info_plus/device_info_plus.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
+import 'constants/constants.dart';
 import 'providers/player_provider.dart';
 import 'providers/theme_provider.dart';
 import 'ui/home/home_screen.dart';
 
-void main() {
+void main() async {
   WidgetsFlutterBinding.ensureInitialized();
+  await getDeviceAndroidApiLevel();
   runApp(
     MultiProvider(
       providers: [
@@ -16,6 +21,14 @@ void main() {
       child: const MyApp(),
     ),
   );
+}
+
+Future<void> getDeviceAndroidApiLevel() async {
+  if (Platform.isAndroid) {
+    final DeviceInfoPlugin deviceInfoPlugin = DeviceInfoPlugin();
+    final androidInfo = await deviceInfoPlugin.androidInfo;
+    Constants.sdkInt = androidInfo.version.sdkInt;
+  }
 }
 
 class MyApp extends StatelessWidget {
