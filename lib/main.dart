@@ -1,8 +1,21 @@
 import 'package:flutter/material.dart';
-import 'package:neumorphic_music_player/ui/music_player_screen.dart';
+import 'package:provider/provider.dart';
+
+import 'providers/player_provider.dart';
+import 'providers/theme_provider.dart';
+import 'ui/home/home_screen.dart';
 
 void main() {
-  runApp(const MyApp());
+  WidgetsFlutterBinding.ensureInitialized();
+  runApp(
+    MultiProvider(
+      providers: [
+        ChangeNotifierProvider(create: (_) => ThemeProvider()),
+        ChangeNotifierProvider(create: (_) => PlayerProvider()),
+      ],
+      child: const MyApp(),
+    ),
+  );
 }
 
 class MyApp extends StatelessWidget {
@@ -12,10 +25,9 @@ class MyApp extends StatelessWidget {
   Widget build(BuildContext context) {
     return MaterialApp(
       title: 'Flutter Demo',
-      theme: ThemeData(
-        primarySwatch: Colors.blue,
-      ),
-      home: MusicPlayerScreen(),
+      debugShowCheckedModeBanner: false,
+      theme: ThemeData(fontFamily: 'Roboto'),
+      home: const HomeScreen(),
     );
   }
 }

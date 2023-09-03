@@ -11,16 +11,22 @@ class AppColors {
   static const Color textColorLight = Color(0xFFD7D5E4);
   static const Color textColorDark = Color(0xFF2A1D29);
 
+  static const Color themeShadowTopDark = Color(0xFF29A0B8);
+  static const Color themeShadowDownDark = Color(0xFF000000);
+
+  static const Color themeShadowTopLight = Color(0xFFDEDEDE);
+  static const Color themeShadowDownLight = Color(0xFF000000);
+
   static const Color themeColorLight = Color(0xFF00B0AA);
   static const Color themeColorDark = Color(0xFF005855);
 
-  static const Gradient gradientLightMode = LinearGradient(
+  static const Gradient gradientModeLight = LinearGradient(
     colors: [bgColorLightTop, bgColorLightBottom],
     begin: Alignment.topLeft,
     end: Alignment.bottomRight,
   );
 
-  static const Gradient gradientDarkMode = LinearGradient(
+  static const Gradient gradientModeDark = LinearGradient(
     colors: [bgColorDarkTop, bgColorDarkBottom],
     begin: Alignment.topLeft,
     end: Alignment.bottomRight,
