@@ -1,3 +1,4 @@
+import 'package:device_info_plus/device_info_plus.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:just_audio/just_audio.dart';
@@ -289,10 +290,11 @@ class _HomeScreenState extends State<HomeScreen> {
 
   Future<void> _getAudioFiles() async {
     const _methodChannel = MethodChannel(Constants.audioFilesChannel);
-    final _permissionStatus = await Permission.storage.status;
+    final permission = Constants.sdkInt != null && Constants.sdkInt! >= 33? Permission.audio : Permission.storage;
+    final _permissionStatus = await permission.status;
     bool _isGranted = _permissionStatus.isGranted;
     if (_permissionStatus.isDenied) {
-      _isGranted = await Permission.storage.request().isGranted;
+      _isGranted = await permission.request().isGranted;
     }
     if (!_isGranted) {
       _showMyDialog();
@@ -322,7 +324,7 @@ class _HomeScreenState extends State<HomeScreen> {
       builder: (BuildContext context) {
         return AlertDialog(
           title: const Text('MP'),
-          content: const Text('External storage permission needed'),
+          content: const Text('Files and storage permissions are required to get music files from your device.'),
           actions: <Widget>[
             TextButton(
               child: const Text('Ok'),

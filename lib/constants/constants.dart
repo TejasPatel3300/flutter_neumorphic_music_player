@@ -8,4 +8,6 @@ class Constants{
   static const audioTagTitle = 'title';
   static const audioTagArtist = 'artist';
   static const audioBitrate = 'bitrate';
+
+  static int? sdkInt;
 }
